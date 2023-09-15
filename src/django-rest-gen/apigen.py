@@ -92,10 +92,53 @@ def load_models(python_path, models_fpath, settings_fpath):
     #     print()
 
 
+def write_class_serializer(class_name, fpath):
+    content = f"""\nclass {class_name}Serializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = {class_name}\n\n"""
+    with open(fpath, "a") as f:
+        f.write(content)
+
+
+def write_serializers(classes, serializers_path):
+    for class_name in classes:
+        write_class_serializer(class_name=class_name, fpath=serializers_path)
+
+
+def write_class_view(class_name, fpath):
+    content = f"""\nclass {class_name}List(generics.ListCreateAPIView):
+    queryset = {class_name}.objects.all()
+    serializer_class = {class_name}Serializer
+
+
+class {class_name}Detail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = {class_name}.objects.all()
+    serializer_class = {class_name}Serializer\n\n"""
+    with open(fpath, "a") as f:
+        f.write(content)
+
+
+def write_views(classes, views_path):
+    for class_name in classes:
+        write_class_serializer(class_name=class_name, fpath=views_path)
+
+
 def workflow(python_path, models_fpath, settings_fpath, views_path, serializers_path):
     models_obj = load_models(python_path=python_path, settings_fpath=settings_fpath, models_fpath=models_fpath)
     classes = get_classes(models_obj)
-    print(f"classes: {classes}")
+    stops = models_fpath.split(os.sep)
+    parent_path = os.sep.join(stops[:-1])
+    print(models_fpath)
+    print(f"parent dir: {parent_path}")
+    if serializers_path is None:
+        serializers_path = os.path.join(parent_path, "serializers.py")
+    if views_path is None:
+        views_path = os.path.join(parent_path, "views.py")
+    write_serializers(classes=classes, serializers_path=serializers_path)
+    write_views(classes=classes, views_path=views_path)
+
+
 #
 # print(f"stack: {inspect.stack()}")
 #
