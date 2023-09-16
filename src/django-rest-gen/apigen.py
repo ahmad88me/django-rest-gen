@@ -2,29 +2,8 @@ import inspect
 import sys
 import importlib
 import os
-from importlib import import_module
 import django
 from django.db import models
-
-#
-# def get_classes(fpath):
-#     """
-#     Get class names from models.py file
-#
-#     :param fpath: the path of the models.py file
-#     :return: list of classes
-#     """
-#     stops = fpath.split(os.sep)
-#     ppath = os.sep.join(stops[:-1])
-#     sys.path = [ppath] + sys.path
-#     parts = stops[-1].split(".")
-#     mod_name = ".".join(parts[:-1])
-#     importlib.import_module(mod_name)
-#     print(sys.modules)
-#     classes = []
-#     # clsmembers = inspect.getmembers(sys.modules[fpath], inspect.isclass)
-#     # return clsmembers
-#     return classes
 
 
 def get_classes(models_obj):
@@ -44,7 +23,13 @@ def get_classes(models_obj):
 
 
 def load_models(python_path, models_fpath, settings_fpath):
-
+    """
+    Load models from the django project and returns the module object
+    :param python_path:
+    :param models_fpath:
+    :param settings_fpath:
+    :return: models.py module object
+    """
     # Add path
     sys.path = [python_path] + sys.path
 
@@ -58,16 +43,6 @@ def load_models(python_path, models_fpath, settings_fpath):
     os.environ["DJANGO_SETTINGS_MODULE"] = proj_settings #"iires.settings"
     django.setup()
 
-    # Load models module
-    #
-    # # Import the inspect module
-    # import inspect
-    # stops = models_fpath.split(os.sep)
-    # ppath = os.sep.join(stops[:-1])
-    # sys.path = [ppath] + sys.path
-    # for fp in sys.path:
-    #     print(fp)
-
     stops = models_fpath.split(os.sep)
     app_name = stops[-2]
     parts = stops[-1].split(".")
@@ -77,19 +52,6 @@ def load_models(python_path, models_fpath, settings_fpath):
 
     models_obj = importlib.import_module(mod_pkg_name)
     return models_obj
-    # importlib.import_module(mod_name)
-    # Import the models module from the django project
-    # Get a list of all classes defined in the models module
-    # classes = inspect.getmembers(models, inspect.isclass)
-    #
-    # # Filter out the classes that do not inherit from django.db.models.Model
-    # classes = [c for c in classes if issubclass(c[1], models.Model)]
-    #
-    # # Print the names and definitions of the classes
-    # for name, cls in classes:
-    #     print(name)
-    #     print(inspect.getsource(cls))
-    #     print()
 
 
 def write_class_serializer(class_name, fpath):
@@ -101,7 +63,15 @@ def write_class_serializer(class_name, fpath):
         f.write(content)
 
 
-def write_serializers(classes, serializers_path):
+def write_serializers(classes, serializers_path, app_path):
+    exists = False
+    if app_path and os.path.exists(app_path):
+        with open(serializers_path) as f:
+            content = f.read()
+            if content.strip() != "":
+                exists = True
+    if not exists:
+        add_serializers_imports(serializers_path=serializers_path, app_path=app_path)
     for class_name in classes:
         write_class_serializer(class_name=class_name, fpath=serializers_path)
 
@@ -119,52 +89,47 @@ class {class_name}Detail(generics.RetrieveUpdateDestroyAPIView):
         f.write(content)
 
 
-def write_views(classes, views_path):
+def add_views_imports(app_path, views_path):
+    content = f"""from {app_path}.models import *
+from {app_path}.serializers import *
+from rest_framework import generics\n\n"""
+    with open(views_path, "a") as f:
+        f.write(content)
+
+
+def add_serializers_imports(app_path, serializers_path):
+    content = f"""from {app_path}.models import *
+from rest_framework import serializers\n\n"""
+    with open(serializers_path, "a") as f:
+        f.write(content)
+
+
+def write_views(classes, views_path, app_path):
+    """
+    Write API views
+    :param classes:
+    :param views_path:
+    :param app_path:
+
+    :return: None
+    """
+    exists = False
+    if app_path and os.path.exists(app_path):
+        with open(views_path) as f:
+            content = f.read()
+            if content.strip() != "":
+                exists = True
+    if not exists:
+        add_views_imports(views_path=views_path, app_path=app_path)
     for class_name in classes:
-        write_class_serializer(class_name=class_name, fpath=views_path)
+        write_class_view(class_name=class_name, fpath=views_path)
 
 
-def workflow(python_path, models_fpath, settings_fpath, views_path, serializers_path):
+def workflow(python_path, app_path, settings_fpath):
+    models_fpath = os.path.join(app_path, "models.py")
+    serializers_path = os.path.join(app_path, "serializers.py")
+    views_path = os.path.join(app_path, "views.py")
     models_obj = load_models(python_path=python_path, settings_fpath=settings_fpath, models_fpath=models_fpath)
     classes = get_classes(models_obj)
-    stops = models_fpath.split(os.sep)
-    parent_path = os.sep.join(stops[:-1])
-    print(models_fpath)
-    print(f"parent dir: {parent_path}")
-    if serializers_path is None:
-        serializers_path = os.path.join(parent_path, "serializers.py")
-    if views_path is None:
-        views_path = os.path.join(parent_path, "views.py")
-    write_serializers(classes=classes, serializers_path=serializers_path)
-    write_views(classes=classes, views_path=views_path)
-
-
-#
-# print(f"stack: {inspect.stack()}")
-#
-# ppath  = "/Users/aalobaid/Workspaces/Pyspace/iirestaurant-api/iirapp"
-# sys.path = [ppath] + sys.path
-#
-# import os, sys, django
-# os.environ["DJANGO_SETTINGS_MODULE"] = "iires.settings"
-# sys.path.insert(0, os.getcwd())
-#
-# django.setup()
-#
-# itertools = importlib.import_module("iirapp.models")
-#
-
-
-
-# fpath = "/Users/aalobaid/Workspaces/Pyspace/iirestaurant-api/iirapp/models.py"
-# # classes = get_classes(fpath)
-# classes = get_classes2(fpath)
-# print(f"get classes: {classes}")
-
-
-# module = imp.new_module(name)
-#
-#     if add_to_sys_modules:
-#         import sys
-#         sys.modules[name] = module
-#     exec code in module._ _dict_ _
+    write_serializers(classes=classes, serializers_path=serializers_path, app_path=app_path)
+    write_views(classes=classes, views_path=views_path, app_path=app_path)

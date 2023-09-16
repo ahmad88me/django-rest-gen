@@ -5,10 +5,10 @@ This generates a fully functioning apis using generated serializers and class-vi
 # How to use it
 1. Install it in your django project `pip install django-rest-gen`.
 2. Run it and specify your app `python -m django-rest-gen`. You should also
-specify the appropriate arguments (e.g., `python -m django-rest-gen  --settings mydjangoproj/settings.py --models mydjangoapp/models.py`)
+specify the appropriate arguments (e.g., ` python -m django-rest-gen  --settings iires/settings.py --apppath iirapp`)
 ## Arguments
 ```
-usage: django-rest-gen [-h] [--pythonpath PYTHONPATH] --settings SETTINGS --models MODELS [--serializers SERIALIZERS] [--views VIEWS]
+usage: django-rest-gen [-h] [--pythonpath PYTHONPATH] --settings SETTINGS --apppath APPPATH [--views VIEWS]
 
 Generate Django REST API code
 
@@ -17,9 +17,7 @@ optional arguments:
   --pythonpath PYTHONPATH
                         Python Path directory.
   --settings SETTINGS   The path to the django project settings
-  --models MODELS       The path to the models.py file
-  --serializers SERIALIZERS
-                        The path to the serializers file
+  --apppath APPPATH     The path to the app
   --views VIEWS         The path to the views file
 ```
 
