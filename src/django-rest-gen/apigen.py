@@ -220,6 +220,47 @@ def write_urls(classes, app_path, urls_path):
         print(content)
 
 
+def get_class_admin(class_pair):
+    """
+    Code to add a single class to admin page
+    :param class_pair:
+    :return:
+    """
+    content = f"admin.site.register({class_pair[0]})\n"
+    return content
+
+
+def get_admin_imports(app_path):
+    """
+    Generate admin imports
+    :param app_path:
+    :return:
+    """
+    app_name = app_path.split(os.sep)[-1]
+    content = f"from django.contrib import admin\nfrom {app_name}.models import *\n\n"
+    return content
+
+
+def write_admin(classes, app_path, admin_path):
+    """
+    Writes the admin.py from the given classes
+    :param classes:
+    :param app_path:
+    :param admin_path:
+    :return:
+    """
+    content = ""
+    for c in classes:
+        content += get_class_admin(c)
+    empty = utils.empty_fpath(admin_path)
+    if empty:
+        with open(admin_path, "a") as f:
+            content = get_admin_imports(app_path) + content
+            f.write(content)
+    else:
+        print(content)
+
+
 def workflow(python_path, app_path, settings_fpath):
     """
     This includes the main workflow of the API generator.
@@ -232,8 +273,10 @@ def workflow(python_path, app_path, settings_fpath):
     serializers_path = os.path.join(app_path, "serializers.py")
     views_path = os.path.join(app_path, "views.py")
     urls_path = os.path.join(app_path, "urls.py")
+    admin_path = os.path.join(app_path, "admin.py")
     models_obj = load_models(python_path=python_path, settings_fpath=settings_fpath, models_fpath=models_fpath)
     classes = get_classes(models_obj)
     write_serializers(classes=classes, serializers_path=serializers_path, app_path=app_path)
     write_views(classes=classes, views_path=views_path, app_path=app_path)
     write_urls(classes=classes, app_path=app_path, urls_path=urls_path)
+    write_admin(classes=classes, app_path=app_path, admin_path=admin_path)
