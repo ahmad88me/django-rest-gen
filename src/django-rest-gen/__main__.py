@@ -8,7 +8,6 @@ def main():
     parser.add_argument('--pythonpath', default=".", help="Python Path directory. ")
     parser.add_argument('--settings', required=True, help="The path to the django project settings")
     parser.add_argument('--apppath', required=True, help="The path to the app")
-    parser.add_argument('--views', default=None, help="The path to the views file")
     args = parser.parse_args()
     print(f"args: {args}")
     base_path = os.path.abspath('.')

@@ -10,7 +10,7 @@ specify the appropriate arguments (e.g., ` python -m django-rest-gen  --settings
 
 ## Arguments
 ```
-usage: django-rest-gen [-h] [--pythonpath PYTHONPATH] --settings SETTINGS --apppath APPPATH [--views VIEWS]
+usage: django-rest-gen [-h] [--pythonpath PYTHONPATH] --settings SETTINGS --apppath APPPATH
 
 Generate Django REST API code
 
@@ -20,7 +20,6 @@ optional arguments:
                         Python Path directory.
   --settings SETTINGS   The path to the django project settings
   --apppath APPPATH     The path to the app
-  --views VIEWS         The path to the views file
 ```
 
 
