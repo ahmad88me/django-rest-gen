@@ -227,6 +227,8 @@ def get_class_admin(class_pair):
     :param class_pair:
     :return:
     """
+    if class_pair[0] == "User":
+        return ""
     content = f"admin.site.register({class_pair[0]})\n"
     return content
 
