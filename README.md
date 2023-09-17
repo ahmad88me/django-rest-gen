@@ -5,7 +5,7 @@ This generates a fully functioning apis using generated serializers and class-vi
 # How to use it
 1. Install it in your django project `pip install django-rest-gen`.
 2. Run it and specify your app `python -m django-rest-gen`. You should also
-specify the appropriate arguments (e.g., ` python -m django-rest-gen  --settings iires/settings.py --apppath iirapp`)
+specify the appropriate arguments (e.g., `python -m django-rest-gen  --settings iires/settings.py --apppath iirapp`)
 *Note: if the file already exists and is not empty, the content will be printed instead in the stdout*
 
 ## Arguments
