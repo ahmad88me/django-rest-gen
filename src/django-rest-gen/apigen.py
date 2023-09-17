@@ -65,7 +65,8 @@ def write_class_serializer(class_name, fpath, write=False):
     """
     content = f"""\nclass {class_name}Serializer(serializers.ModelSerializer):\n
     class Meta:
-        model = {class_name}\n\n"""
+        model = {class_name}
+        fields = '__all__'\n\n"""
     if write:
         with open(fpath, "a") as f:
             f.write(content)
