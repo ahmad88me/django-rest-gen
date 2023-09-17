@@ -2,6 +2,7 @@ import inspect
 import sys
 import importlib
 import os
+from . import utils
 import django
 from django.db import models
 
@@ -17,9 +18,9 @@ def get_classes(models_obj):
     clsmembers = inspect.getmembers(models_obj, inspect.isclass)
 
     # Filter Models
-    class_names = [c[0] for c in clsmembers if issubclass(c[1], models.Model)]
-    print(f"classes: {class_names}")
-    return class_names
+    classes = [(c[0], c[1]._meta.verbose_name_plural.title()) for c in clsmembers if issubclass(c[1], models.Model)]
+    print(f"classes: {classes}")
+    return classes
 
 
 def load_models(python_path, models_fpath, settings_fpath):
@@ -54,54 +55,92 @@ def load_models(python_path, models_fpath, settings_fpath):
     return models_obj
 
 
-def write_class_serializer(class_name, fpath):
-    content = f"""\nclass {class_name}Serializer(serializers.ModelSerializer):
-
+def write_class_serializer(class_name, fpath, write=False):
+    """
+    Write a serializer for the given class
+    :param class_name:
+    :param fpath:
+    :param write:
+    :return:
+    """
+    content = f"""\nclass {class_name}Serializer(serializers.ModelSerializer):\n
     class Meta:
         model = {class_name}\n\n"""
-    with open(fpath, "a") as f:
-        f.write(content)
+    if write:
+        with open(fpath, "a") as f:
+            f.write(content)
+    else:
+        print(content)
 
 
 def write_serializers(classes, serializers_path, app_path):
-    exists = False
-    if app_path and os.path.exists(app_path):
-        with open(serializers_path) as f:
-            content = f.read()
-            if content.strip() != "":
-                exists = True
-    if not exists:
-        add_serializers_imports(serializers_path=serializers_path, app_path=app_path)
-    for class_name in classes:
-        write_class_serializer(class_name=class_name, fpath=serializers_path)
+    """
+    Write serializers for all provided classes
+    :param classes:
+    :param serializers_path:
+    :param app_path:
+    :return:
+    """
+    empty = utils.empty_fpath(serializers_path)
+    add_serializers_imports(serializers_path=serializers_path, app_path=app_path, write=empty)
+    for c in classes:
+        write_class_serializer(class_name=c[0], fpath=serializers_path, write=empty)
 
 
-def write_class_view(class_name, fpath):
+def write_class_view(class_name, fpath, write=False):
+    """
+    Write the view for a single class
+    :param class_name:
+    :param fpath:
+    :param write:
+    :return:
+    """
     content = f"""\nclass {class_name}List(generics.ListCreateAPIView):
     queryset = {class_name}.objects.all()
-    serializer_class = {class_name}Serializer
-
-
+    serializer_class = {class_name}Serializer\n\n
 class {class_name}Detail(generics.RetrieveUpdateDestroyAPIView):
     queryset = {class_name}.objects.all()
     serializer_class = {class_name}Serializer\n\n"""
-    with open(fpath, "a") as f:
-        f.write(content)
+    if write:
+        with open(fpath, "a") as f:
+            f.write(content)
+    else:
+        print(content)
 
 
-def add_views_imports(app_path, views_path):
+def add_views_imports(app_path, views_path, write=False):
+    """
+    Add the imports for views.py
+    :param app_path:
+    :param views_path:
+    :param write:
+    :return:
+    """
     content = f"""from {app_path}.models import *
 from {app_path}.serializers import *
 from rest_framework import generics\n\n"""
-    with open(views_path, "a") as f:
-        f.write(content)
+    if write:
+        with open(views_path, "a") as f:
+            f.write(content)
+    else:
+        print(content)
 
 
-def add_serializers_imports(app_path, serializers_path):
+def add_serializers_imports(app_path, serializers_path, write=False):
+    """
+    Add the imports for serializers.py
+    :param app_path:
+    :param serializers_path:
+    :param write:
+    :return:
+    """
     content = f"""from {app_path}.models import *
 from rest_framework import serializers\n\n"""
-    with open(serializers_path, "a") as f:
-        f.write(content)
+    if write:
+        with open(serializers_path, "a") as f:
+            f.write(content)
+    else:
+        print(content)
 
 
 def write_views(classes, views_path, app_path):
@@ -113,23 +152,88 @@ def write_views(classes, views_path, app_path):
 
     :return: None
     """
-    exists = False
-    if app_path and os.path.exists(app_path):
-        with open(views_path) as f:
-            content = f.read()
-            if content.strip() != "":
-                exists = True
-    if not exists:
-        add_views_imports(views_path=views_path, app_path=app_path)
-    for class_name in classes:
-        write_class_view(class_name=class_name, fpath=views_path)
+    empty = utils.empty_fpath(fpath=views_path)
+    add_views_imports(views_path=views_path, app_path=app_path, write=empty)
+    for c in classes:
+        write_class_view(class_name=c[0], fpath=views_path, write=empty)
+
+
+def add_urls_imports(app_path, urls_path, write=False):
+    content = f"""from {app_path}.models import *
+from {app_path} import views
+from django.urls import path, re_path, include\n\n"""
+    if write:
+        with open(urls_path, "a") as f:
+            f.write(content)
+    else:
+        print(content)
+
+
+def get_class_url_name(verbose_name, joiner="_"):
+    """
+    Transform the class verbose name to a url friendly name
+    :param verbose_name:
+    :param joiner:
+    :return:
+    """
+    url_name = verbose_name.replace(" ", joiner)
+    url_name = url_name.lower()
+    # print(f" {verbose_name} -> {url_name}")
+    return url_name
+
+
+def get_class_url(class_pair):
+    """
+    Appends the class url path to urls.py
+    :param class_pair:
+    :return:
+    """
+    url_name = get_class_url_name(class_pair[1])
+    content = f"""\tpath('{url_name}/', views.{class_pair[0]}List.as_view()),
+\tpath('{url_name}/<int:pk>/', views.{class_pair[0]}Detail.as_view()),\n"""
+    return content
+
+
+def write_urls(classes, app_path, urls_path):
+    """
+    Generates the code for the urls.py
+    :param classes:
+    :param app_path:
+    :param urls_path:
+    :return:
+    """
+    empty = utils.empty_fpath(urls_path)
+    add_urls_imports(urls_path=urls_path, app_path=app_path, write=empty)
+
+    content = ""
+
+    for c in classes:
+        content += get_class_url(class_pair=c)
+
+    content = f"urlpatterns = [\n{content}\n]"
+
+    if empty:
+        with open(urls_path, "a") as f:
+            f.write(content)
+
+    else:
+        print(content)
 
 
 def workflow(python_path, app_path, settings_fpath):
+    """
+    This includes the main workflow of the API generator.
+    :param python_path:
+    :param app_path:
+    :param settings_fpath:
+    :return:
+    """
     models_fpath = os.path.join(app_path, "models.py")
     serializers_path = os.path.join(app_path, "serializers.py")
     views_path = os.path.join(app_path, "views.py")
+    urls_path = os.path.join(app_path, "urls.py")
     models_obj = load_models(python_path=python_path, settings_fpath=settings_fpath, models_fpath=models_fpath)
     classes = get_classes(models_obj)
     write_serializers(classes=classes, serializers_path=serializers_path, app_path=app_path)
     write_views(classes=classes, views_path=views_path, app_path=app_path)
+    write_urls(classes=classes, app_path=app_path, urls_path=urls_path)

@@ -21,3 +21,6 @@ optional arguments:
   --views VIEWS         The path to the views file
 ```
 
+
+# Limitations
+* Flat. No nesting is provided as it depends on user preferences.
