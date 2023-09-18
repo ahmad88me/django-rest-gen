@@ -264,12 +264,13 @@ def write_admin(classes, app_path, admin_path):
         print(content)
 
 
-def workflow(python_path, app_path, settings_fpath):
+def workflow(python_path, app_path, settings_fpath, overwrite):
     """
     This includes the main workflow of the API generator.
     :param python_path:
     :param app_path:
     :param settings_fpath:
+    :param overwrite: bool
     :return:
     """
     models_fpath = os.path.join(app_path, "models.py")
@@ -277,6 +278,10 @@ def workflow(python_path, app_path, settings_fpath):
     views_path = os.path.join(app_path, "views.py")
     urls_path = os.path.join(app_path, "urls.py")
     admin_path = os.path.join(app_path, "admin.py")
+    if overwrite:
+        for fpath in [serializers_path, views_path, urls_path, admin_path]:
+            with open(fpath, 'w') as f:
+                f.write('')
     models_obj = load_models(python_path=python_path, settings_fpath=settings_fpath, models_fpath=models_fpath)
     classes = get_classes(models_obj)
     write_serializers(classes=classes, serializers_path=serializers_path, app_path=app_path)
