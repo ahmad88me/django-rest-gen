@@ -10,7 +10,7 @@ specify the appropriate arguments (e.g., `python -m django-rest-gen  --settings 
 
 ## Arguments
 ```
-usage: django-rest-gen [-h] [--pythonpath PYTHONPATH] --settings SETTINGS --apppath APPPATH [--overwrite]
+usage: django-rest-gen [-h] [--pythonpath PYTHONPATH] --settings SETTINGS --apppath APPPATH [--overwrite] [--dummy]
 
 Generate Django REST API code
 
@@ -21,6 +21,7 @@ optional arguments:
   --settings SETTINGS   The path to the django project settings
   --apppath APPPATH     The path to the app
   --overwrite           Whether to overwrite existing files if any
+  --dummy               Whether to generate dummy data generator
 ```
 
 
