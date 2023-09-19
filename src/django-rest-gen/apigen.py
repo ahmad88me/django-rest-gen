@@ -264,13 +264,40 @@ def write_admin(classes, app_path, admin_path):
         print(content)
 
 
-def workflow(python_path, app_path, settings_fpath, overwrite):
+def write_dummy(classes, app_path, dummy_path, overwrite):
+    """
+
+    :param classes:
+    :param app_path:
+    :param dummy_path:
+    :param overwrite:
+    :return:
+    """
+    content = "from model_bakery import baker\nfrom django.contrib.auth.models import User\n\n"
+    content += "def run(*args):\n"
+    app_name = app_path.split(os.sep)[-1]
+    for c in classes:
+        if c[0] == "User":
+            line = f"\tbaker.make({c[0]})\n"
+        else:
+            line = f"\tbaker.make('{app_name}.{c[0]}')\n"
+        content += line
+    empty = utils.empty_fpath(dummy_path)
+    if empty or overwrite:
+        with open(dummy_path, "w") as f:
+            f.write(content)
+    else:
+        print(content)
+
+
+def workflow(python_path, app_path, settings_fpath, overwrite, dummy):
     """
     This includes the main workflow of the API generator.
     :param python_path:
     :param app_path:
     :param settings_fpath:
     :param overwrite: bool
+    :param dummy: bool
     :return:
     """
     models_fpath = os.path.join(app_path, "models.py")
@@ -278,6 +305,7 @@ def workflow(python_path, app_path, settings_fpath, overwrite):
     views_path = os.path.join(app_path, "views.py")
     urls_path = os.path.join(app_path, "urls.py")
     admin_path = os.path.join(app_path, "admin.py")
+    dummy_path = os.path.join(app_path, "dummygen.py")
     if overwrite:
         for fpath in [serializers_path, views_path, urls_path, admin_path]:
             with open(fpath, 'w') as f:
@@ -288,3 +316,5 @@ def workflow(python_path, app_path, settings_fpath, overwrite):
     write_views(classes=classes, views_path=views_path, app_path=app_path)
     write_urls(classes=classes, app_path=app_path, urls_path=urls_path)
     write_admin(classes=classes, app_path=app_path, admin_path=admin_path)
+    if dummy:
+        write_dummy(classes, app_path, dummy_path, overwrite)
