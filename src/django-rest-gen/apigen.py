@@ -119,6 +119,9 @@ def add_views_imports(app_path, views_path, write=False):
     """
     content = f"""from {app_path}.models import *
 from {app_path}.serializers import *
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework import generics\n\n"""
     if write:
         with open(views_path, "a") as f:
@@ -144,6 +147,32 @@ from rest_framework import serializers\n\n"""
         print(content)
 
 
+def write_root_view(views_path, classes, write):
+    """
+    Write the root api view
+    :param views_path:
+    :param classes:
+    :param write:
+    :return:
+    """
+    lists = ""
+    for c in classes:
+        name = get_class_url_name(c[1])
+        line = f"'{name}-list': reverse('{name}-list', request=request, format=format),\n"
+        lists += line
+
+    content = f"""@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({{
+         {lists}  
+    }})
+    """
+
+    if write:
+        with open(views_path, "a") as f:
+            f.write(content)
+
+
 def write_views(classes, views_path, app_path):
     """
     Write API views
@@ -155,11 +184,19 @@ def write_views(classes, views_path, app_path):
     """
     empty = utils.empty_fpath(fpath=views_path)
     add_views_imports(views_path=views_path, app_path=app_path, write=empty)
+    write_root_view(views_path=views_path, classes=classes, write=empty)
     for c in classes:
         write_class_view(class_name=c[0], fpath=views_path, write=empty)
 
 
 def add_urls_imports(app_path, urls_path, write=False):
+    """
+    Add urls.py required imports
+    :param app_path:
+    :param urls_path:
+    :param write:
+    :return:
+    """
     content = f"""from {app_path}.models import *
 from {app_path} import views
 from django.urls import path, re_path, include\n\n"""
@@ -190,7 +227,7 @@ def get_class_url(class_pair):
     :return:
     """
     url_name = get_class_url_name(class_pair[1])
-    content = f"""\tpath('{url_name}/', views.{class_pair[0]}List.as_view()),
+    content = f"""\tpath('{url_name}/', views.{class_pair[0]}List.as_view(), name='{url_name}-list'),
 \tpath('{url_name}/<int:pk>/', views.{class_pair[0]}Detail.as_view()),\n"""
     return content
 
@@ -210,6 +247,9 @@ def write_urls(classes, app_path, urls_path):
 
     for c in classes:
         content += get_class_url(class_pair=c)
+
+    # root url
+    content += "\tpath('', views.api_root)"
 
     content = f"urlpatterns = [\n{content}\n]"
 
