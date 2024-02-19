@@ -18,7 +18,10 @@ def get_classes(models_obj):
     clsmembers = inspect.getmembers(models_obj, inspect.isclass)
 
     # Filter Models
-    classes = [(c[0], c[1]._meta.verbose_name_plural.title()) for c in clsmembers if issubclass(c[1], models.Model)]
+    # classes = [(c[0], c[1]._meta.verbose_name_plural.title()) for c in clsmembers if issubclass(c[1], models.Model)]
+    classes = [(c[0], c[1]._meta.verbose_name_plural.title(), c[1]._meta.verbose_name.title()) for c in clsmembers if issubclass(c[1], models.Model)]
+
+
     print(f"classes: {classes}")
     return classes
 
@@ -157,20 +160,22 @@ def write_root_view(views_path, classes, write):
     """
     lists = ""
     for c in classes:
-        name = get_class_url_name(c[1])
-        line = f"'{name}-list': reverse('{name}-list', request=request, format=format),\n"
+        name = get_class_url_name(c[2], joiner="-")
+        line = f"\t'{name}-list': reverse('{name}-list', request=request, format=format),\n"
         lists += line
 
     content = f"""@api_view(['GET'])
 def api_root(request, format=None):
     return Response({{
-         {lists}  
+{lists}  
     }})
     """
 
     if write:
         with open(views_path, "a") as f:
             f.write(content)
+    else:
+        print(content)
 
 
 def write_views(classes, views_path, app_path):
@@ -226,9 +231,10 @@ def get_class_url(class_pair):
     :param class_pair:
     :return:
     """
-    url_name = get_class_url_name(class_pair[1])
-    content = f"""\tpath('{url_name}/', views.{class_pair[0]}List.as_view(), name='{url_name}-list'),
-\tpath('{url_name}/<int:pk>/', views.{class_pair[0]}Detail.as_view()),\n"""
+    url_name = get_class_url_name(class_pair[2], joiner="-")
+    url_name_plural = get_class_url_name(class_pair[1])
+    content = f"""\tpath('{url_name_plural}/', views.{class_pair[0]}List.as_view(), name='{url_name}-list'),
+\tpath('{url_name_plural}/<int:pk>/', views.{class_pair[0]}Detail.as_view(), name='{url_name}-detail'),\n"""
     return content
 
 
