@@ -4,10 +4,10 @@ from . import apigen
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='django-rest-gen', description='Generate Django REST API code')
+    parser = argparse.ArgumentParser(prog='django_rest_gen', description='Generate Django REST API code')
     parser.add_argument('--pythonpath', default=".", help="Python Path directory. ")
-    parser.add_argument('--settings', required=True, help="The path to the django project settings")
-    parser.add_argument('--apppath', required=True, help="The path to the app")
+    parser.add_argument('--settings', required=False, help="The path to the django project settings")
+    parser.add_argument('--apppath', required=False, help="The path to the app")
     parser.add_argument('--overwrite', action='store_true',
                         help="Whether to overwrite existing files if any")
     parser.add_argument('--dummy', action='store_true',

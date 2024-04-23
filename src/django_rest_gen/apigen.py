@@ -336,6 +336,66 @@ def write_dummy(classes, app_path, dummy_path, overwrite):
         print(content)
 
 
+def get_curr_path():
+    p = os.path.abspath(os.getcwd())
+    print(f"current path: {p}")
+    return p
+
+
+def guess_app_path(curr_path=None):
+    if not curr_path:
+        curr_path = get_curr_path()
+
+    dirs = []
+    files = dict()
+    for fp in os.listdir(curr_path):
+        fp_path = os.path.join(curr_path, fp)
+        if os.path.isdir(fp_path):
+            dirs.append(fp_path)
+        elif os.path.isfile(fp_path):
+            files[fp] = fp_path
+
+    if "models.py" in files: # and "views.py" in files:
+        with open(files["models.py"]) as f:
+            text = f.read()
+            if len(text) > 50:
+                return curr_path
+
+    for d in dirs:
+        guessed = guess_app_path(os.path.join(curr_path, d))
+        if guessed:
+            return guessed
+
+    return None
+
+
+def guess_settings_path(curr_path=None):
+    if not curr_path:
+        curr_path = get_curr_path()
+
+    print(f"DEBUG: curr_path: {curr_path}")
+    dirs = []
+    for fp in os.listdir(curr_path):
+        fp_path = os.path.join(curr_path, fp)
+        if os.path.isdir(fp_path):
+            print(f"DEBUG is dir: {fp_path}")
+            dirs.append(fp_path)
+        elif os.path.isfile(fp_path) and fp == "settings.py":
+            print(f"DEBUG: found path: {fp_path}")
+            return fp_path
+
+    print(f"DEBUG: path not found:")
+
+    for d in dirs:
+        print(f"Going into: {d}")
+        print(f"should be going to {os.path.join(curr_path, d)}")
+        guessed = guess_settings_path(d)
+        if guessed:
+            return guessed
+
+    return None
+
+
 def workflow(python_path, app_path, settings_fpath, overwrite, dummy):
     """
     This includes the main workflow of the API generator.
@@ -346,6 +406,20 @@ def workflow(python_path, app_path, settings_fpath, overwrite, dummy):
     :param dummy: bool
     :return:
     """
+    if not app_path:
+        app_path = guess_app_path()
+        if app_path is None:
+            raise Exception("Unable to detect app path.")
+        else:
+            print(f"Guessed app path: {app_path}")
+
+    if not settings_fpath:
+        settings_fpath = guess_settings_path()
+        if settings_fpath is None:
+            raise Exception("Unable to detect settings path")
+        else:
+            print(f"Guessed settings path: {settings_fpath}")
+
     models_fpath = os.path.join(app_path, "models.py")
     serializers_path = os.path.join(app_path, "serializers.py")
     views_path = os.path.join(app_path, "views.py")

@@ -11,12 +11,12 @@ specify the appropriate arguments (e.g., `python -m django_rest_gen  --settings 
 *Note: if the file already exists and is not empty, the content will be printed instead in the stdout*
 
 ## Arguments
-```
-usage: django_rest_gen [-h] [--pythonpath PYTHONPATH] --settings SETTINGS --apppath APPPATH [--overwrite] [--dummy]
+``` 
+usage: django_rest_gen [-h] [--pythonpath PYTHONPATH] [--settings SETTINGS] [--apppath APPPATH] [--overwrite] [--dummy]
 
 Generate Django REST API code
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --pythonpath PYTHONPATH
                         Python Path directory.
@@ -24,7 +24,14 @@ optional arguments:
   --apppath APPPATH     The path to the app
   --overwrite           Whether to overwrite existing files if any
   --dummy               Whether to generate dummy data generator
+
 ```
+
+## Automatic detection
+If `--settings` and `--apppath` are not passed, it will try to detect them. It will look for anypath
+within your project that has `settings.py` to be the default settings path and any directory that has
+`models.py` to be the app path. You need to specify this in case you have multiple apps in your django 
+project.
 
 
 # Limitations
