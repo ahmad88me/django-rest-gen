@@ -1,4 +1,6 @@
 # django-rest-gen
+![tests](https://github.com/ahmad88me/django-rest-gen/actions/workflows/pytest.yml/badge.svg)
+
 This generates a fully functioning apis using generated serializers and class-views. 
 
 
