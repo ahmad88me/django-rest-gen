@@ -10,7 +10,6 @@ from django.db import models
 def get_classes(models_obj):
     """
     Get class names from models.py file
-
     :param fpath: the path of the models.py file
     :return: list of classes
     """
@@ -20,7 +19,6 @@ def get_classes(models_obj):
     # Filter Models
     # classes = [(c[0], c[1]._meta.verbose_name_plural.title()) for c in clsmembers if issubclass(c[1], models.Model)]
     classes = [(c[0], c[1]._meta.verbose_name_plural.title(), c[1]._meta.verbose_name.title()) for c in clsmembers if issubclass(c[1], models.Model)]
-
 
     print(f"classes: {classes}")
     return classes
@@ -44,7 +42,7 @@ def load_models(python_path, models_fpath, settings_fpath):
         proj_settings = proj_settings[:-3]
 
     print(f"Project settings {proj_settings}")
-    os.environ["DJANGO_SETTINGS_MODULE"] = proj_settings #"iires.settings"
+    os.environ["DJANGO_SETTINGS_MODULE"] = proj_settings
     django.setup()
 
     stops = models_fpath.split(os.sep)
@@ -130,6 +128,7 @@ from rest_framework import generics\n\n"""
         with open(views_path, "a") as f:
             f.write(content)
     else:
+        print("\n\n\n\n=========================== views.py ===========================\n\n")
         print(content)
 
 
@@ -147,6 +146,7 @@ from rest_framework import serializers\n\n"""
         with open(serializers_path, "a") as f:
             f.write(content)
     else:
+        print("\n\n\n\n=========================== serializers.py ===========================\n\n")
         print(content)
 
 
@@ -184,7 +184,6 @@ def write_views(classes, views_path, app_path):
     :param classes:
     :param views_path:
     :param app_path:
-
     :return: None
     """
     empty = utils.empty_fpath(fpath=views_path)
@@ -209,6 +208,7 @@ from django.urls import path, re_path, include\n\n"""
         with open(urls_path, "a") as f:
             f.write(content)
     else:
+        print("\n\n\n\n=========================== urls.py ===========================\n\n")
         print(content)
 
 
@@ -221,7 +221,6 @@ def get_class_url_name(verbose_name, joiner="_"):
     """
     url_name = verbose_name.replace(" ", joiner)
     url_name = url_name.lower()
-    # print(f" {verbose_name} -> {url_name}")
     return url_name
 
 
@@ -302,11 +301,12 @@ def write_admin(classes, app_path, admin_path):
     for c in classes:
         content += get_class_admin(c)
     empty = utils.empty_fpath(admin_path)
+    content = get_admin_imports(app_path) + content
     if empty:
         with open(admin_path, "a") as f:
-            content = get_admin_imports(app_path) + content
             f.write(content)
     else:
+        print("\n\n\n\n=========================== admin.py ===========================\n\n")
         print(content)
 
 
