@@ -111,16 +111,16 @@ class {class_name}Detail(generics.RetrieveUpdateDestroyAPIView):
         print(content)
 
 
-def add_views_imports(app_path, views_path, write=False):
+def add_views_imports(app_name, views_path, write=False):
     """
     Add the imports for views.py
-    :param app_path:
+    :param app_name:
     :param views_path:
     :param write:
     :return:
     """
-    content = f"""from {app_path}.models import *
-from {app_path}.serializers import *
+    content = f"""from {app_name}.models import *
+from {app_name}.serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -199,7 +199,10 @@ def write_views(classes, views_path, app_path):
     :return: None
     """
     empty = utils.empty_fpath(fpath=views_path)
-    add_views_imports(views_path=views_path, app_path=app_path, write=empty)
+
+    # add_views_imports(views_path=views_path, app_path=app_path, write=empty)
+    # add_views_imports(views_path=views_path, app_name=app_path, write=empty)
+    add_views_imports(views_path=views_path, app_name=get_app_name(app_path), write=empty)
     write_root_view(views_path=views_path, classes=classes, write=empty)
     for c in classes:
         write_class_view(class_name=c[0], fpath=views_path, write=empty)
@@ -257,7 +260,7 @@ def write_urls(classes, app_path, urls_path):
     :param urls_path:
     :return:
     """
-    empty = utils.empty_fpath(urls_path)
+    empty = utils.empty_fpath(fpath=urls_path)
     add_urls_imports(urls_path=urls_path, app_path=app_path, write=empty)
 
     content = ""
