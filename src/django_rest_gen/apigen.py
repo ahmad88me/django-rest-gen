@@ -84,7 +84,8 @@ def write_serializers(classes, serializers_path, app_path):
     :return:
     """
     empty = utils.empty_fpath(serializers_path)
-    add_serializers_imports(serializers_path=serializers_path, app_path=app_path, write=empty)
+    # add_serializers_imports(serializers_path=serializers_path, app_name=app_path, write=empty)
+    add_serializers_imports(serializers_path=serializers_path, app_name=get_app_name(app_path), write=empty)
     for c in classes:
         write_class_serializer(class_name=c[0], fpath=serializers_path, write=empty)
 
@@ -132,15 +133,26 @@ from rest_framework import generics\n\n"""
         print(content)
 
 
-def add_serializers_imports(app_path, serializers_path, write=False):
+def get_app_name(app_path):
+    path_list = os.path.split(app_path)
+    if path_list[-1].endswith(".py"):
+        app_name = path_list[-2]
+    else:
+        app_name = path_list[-1]
+    print(f"DEBUG: get_app_name> app name: {app_name}")
+    return app_name
+
+
+def add_serializers_imports(app_name, serializers_path, write=False):
     """
     Add the imports for serializers.py
-    :param app_path:
+    :param app_name:
     :param serializers_path:
     :param write:
     :return:
     """
-    content = f"""from {app_path}.models import *
+    print(f"DEBUG: add_serializers_imports> the app_name is: {app_name}")
+    content = f"""from {app_name}.models import *
 from rest_framework import serializers\n\n"""
     if write:
         with open(serializers_path, "a") as f:
