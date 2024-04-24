@@ -24,7 +24,7 @@ def mock_filesystem(monkeypatch):
 
 
 def test_no_settings_file_found(mock_filesystem):
-    os.listdir.return_value = [ "file1.txt", "file2.log"]
+    os.listdir.return_value = ["file1.txt", "file2.log"]
     os.path.isdir.side_effect = lambda x: "dir" in x.split("/")[-1]
     os.path.isfile.return_value = False
 

@@ -9,7 +9,8 @@ def mock_dependencies(monkeypatch):
     # Mock external utilities and file opening
     monkeypatch.setattr("django_rest_gen.utils.empty_fpath", MagicMock())
     monkeypatch.setattr("django_rest_gen.apigen.add_urls_imports", MagicMock())
-    monkeypatch.setattr("django_rest_gen.apigen.get_class_url", MagicMock(return_value="path('url/', views.view_name),\n"))
+    monkeypatch.setattr("django_rest_gen.apigen.get_class_url",
+                        MagicMock(return_value="path('url/', views.view_name),\n"))
     monkeypatch.setattr("builtins.open", mock_open())
 
 
@@ -53,23 +54,11 @@ def test_write_urls_empty_false(mock_dependencies, capsys):
         "]\n"
     )
     assert expected_content in captured.out
-    # assert captured.out == expected_content
-
-
-
-
-
-
-
-
-
-
 
 
 # Test the function with typical inputs
 def test_urls_imports_without_writing(monkeypatch, capfd):
     with patch('django_rest_gen.utils.empty_fpath') as mock_empty:
-
         # Setup mock returns
         mock_empty.return_value = False
 
@@ -84,9 +73,6 @@ def test_urls_imports_without_writing(monkeypatch, capfd):
 
         out, err = capfd.readouterr()
 
-        print(f"\n\nThe OUT was being debugged: {out}\n\n")
-
-        # Check if empty_fpath was called correctly
         mock_empty.assert_called_once_with(fpath=urls_path)
 
         assert "from myapp.models import *" in out
