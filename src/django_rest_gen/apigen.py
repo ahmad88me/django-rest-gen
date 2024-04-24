@@ -208,16 +208,16 @@ def write_views(classes, views_path, app_path):
         write_class_view(class_name=c[0], fpath=views_path, write=empty)
 
 
-def add_urls_imports(app_path, urls_path, write=False):
+def add_urls_imports(app_name, urls_path, write=False):
     """
     Add urls.py required imports
-    :param app_path:
+    :param app_name:
     :param urls_path:
     :param write:
     :return:
     """
-    content = f"""from {app_path}.models import *
-from {app_path} import views
+    content = f"""from {app_name}.models import *
+from {app_name} import views
 from django.urls import path, re_path, include\n\n"""
     if write:
         with open(urls_path, "a") as f:
@@ -261,7 +261,8 @@ def write_urls(classes, app_path, urls_path):
     :return:
     """
     empty = utils.empty_fpath(fpath=urls_path)
-    add_urls_imports(urls_path=urls_path, app_path=app_path, write=empty)
+    add_urls_imports(urls_path=urls_path, app_name=get_app_name(app_path), write=empty)
+    # add_urls_imports(urls_path=urls_path, app_name=app_path, write=empty)
 
     content = ""
 
@@ -270,7 +271,6 @@ def write_urls(classes, app_path, urls_path):
 
     # root url
     content += "\tpath('', views.api_root)"
-
     content = f"urlpatterns = [\n{content}\n]"
 
     if empty:
