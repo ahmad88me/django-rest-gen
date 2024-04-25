@@ -139,7 +139,6 @@ def get_app_name(app_path):
         app_name = path_list[-2]
     else:
         app_name = path_list[-1]
-    print(f"DEBUG: get_app_name> app name: {app_name}")
     return app_name
 
 
@@ -151,7 +150,6 @@ def add_serializers_imports(app_name, serializers_path, write=False):
     :param write:
     :return:
     """
-    print(f"DEBUG: add_serializers_imports> the app_name is: {app_name}")
     content = f"""from {app_name}.models import *
 from rest_framework import serializers\n\n"""
     if write:
@@ -388,22 +386,15 @@ def guess_settings_path(curr_path=None):
     if not curr_path:
         curr_path = get_curr_path()
 
-    print(f"DEBUG: curr_path: {curr_path}")
     dirs = []
     for fp in os.listdir(curr_path):
         fp_path = os.path.join(curr_path, fp)
         if os.path.isdir(fp_path):
-            print(f"DEBUG is dir: {fp_path}")
             dirs.append(fp_path)
         elif os.path.isfile(fp_path) and fp == "settings.py":
-            print(f"DEBUG: found path: {fp_path}")
             return fp_path
 
-    print(f"DEBUG: path not found:")
-
     for d in dirs:
-        print(f"Going into: {d}")
-        print(f"should be going to {os.path.join(curr_path, d)}")
         guessed = guess_settings_path(d)
         if guessed:
             return guessed
