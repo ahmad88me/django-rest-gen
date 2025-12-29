@@ -1,4 +1,5 @@
 # django-rest-gen
+![tests](../../actions/workflows/pytest.yml/badge.svg)
 ![tests](https://github.com/ahmad88me/django-rest-gen/actions/workflows/pytest.yml/badge.svg)
 [![PyPI Version](https://img.shields.io/pypi/v/django-rest-gen.svg)](https://pypi.org/project/django-rest-gen/)
 <!-- ![PyPI](https://img.shields.io/pypi/v/django-rest-gen?label=pypi%20package) -->
